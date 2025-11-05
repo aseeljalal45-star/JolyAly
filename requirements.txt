@@ -2,5 +2,6 @@ streamlit
 pandas
 openpyxl
 xlrd
+streamlit-option-menu
 python-dotenv
 watchdog
