@@ -1,0 +1,6 @@
+body { font-family: 'Cairo', sans-serif; }
+.stButton>button {
+    background-color: #007BFF;
+    color: white;
+    border-radius: 10px;
+}
