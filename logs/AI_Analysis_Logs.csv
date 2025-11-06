@@ -1,1 +1,16 @@
-timestamp,role,query,response
+import csv
+from datetime import datetime
+
+LOG_FILE = "AI_Analysis_Logs.csv"
+
+def log_ai_interaction(role, query, response, reference="", example="", notes=""):
+    header = ["timestamp","role","query","response","reference","example","notes"]
+    row = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"), role, query, response, reference, example, notes]
+
+    # التحقق إذا الملف موجود أو لا
+    file_exists = os.path.exists(LOG_FILE)
+    with open(LOG_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(header)
+        writer.writerow(row)
