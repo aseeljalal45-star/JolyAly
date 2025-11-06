@@ -140,7 +140,7 @@ def workers_section():
         with tab:
             st.markdown(f"🛠️ أداة: {tab.title}")
     show_ai_assistant()
-    smart_recommender("العمال", n=4)
+    smart_recommender("العمال", n=6)  # ✅ عرض البطاقات المتحركة الآن
 
 # ==============================
 # 🏢 أصحاب العمل
@@ -154,7 +154,7 @@ def employers_section():
         with tab:
             st.markdown(f"🛠️ أداة: {tab.title}")
     show_ai_assistant()
-    smart_recommender("اصحاب العمل", n=4)
+    smart_recommender("اصحاب العمل", n=6)
 
 # ==============================
 # 🕵️ مفتشو العمل
@@ -167,7 +167,7 @@ def inspectors_section():
         with tab:
             st.markdown(f"🛠️ نوع التفتيش: {tab.title}")
     show_ai_assistant()
-    smart_recommender("مفتشو العمل", n=3)
+    smart_recommender("مفتشو العمل", n=6)
 
 # ==============================
 # 📖 الباحثون والمتدربون
@@ -179,7 +179,7 @@ def researchers_section():
         with tab:
             st.markdown(f"🛠️ نوع التحليل: {tab.title}")
     show_ai_assistant()
-    smart_recommender("الباحثون والمتدربون", n=3)
+    smart_recommender("الباحثون والمتدربون", n=6)
 
 # ==============================
 # ⚙️ الإعدادات
@@ -198,25 +198,3 @@ def settings_page():
 # ==============================
 with st.sidebar:
     choice = option_menu(
-        "القائمة الرئيسية",
-        ["🏠 الصفحة الرئيسية", "👷 العمال", "🏢 أصحاب العمل",
-         "🕵️ مفتشو العمل", "📖 الباحثون والمتدربون", "⚙️ الإعدادات"],
-        icons=["house", "person", "building", "shield", "book", "gear"],
-        default_index=0
-    )
-
-pages = {
-    "🏠 الصفحة الرئيسية": show_home,
-    "👷 العمال": workers_section,
-    "🏢 أصحاب العمل": employers_section,
-    "🕵️ مفتشو العمل": inspectors_section,
-    "📖 الباحثون والمتدربون": researchers_section,
-    "⚙️ الإعدادات": settings_page
-}
-pages[choice]()
-
-# ==============================
-# ⏰ Footer
-# ==============================
-st.markdown(
-    f"<hr><center><
