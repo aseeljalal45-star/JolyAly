@@ -1,7 +1,26 @@
-streamlit
-pandas
-openpyxl
-xlrd
-streamlit-option-menu
-python-dotenv
-watchdog
+# --- Core Framework ---
+streamlit>=1.37.0
+streamlit-option-menu>=0.3.12
+
+# --- Data Handling ---
+pandas>=2.2.2
+openpyxl>=3.1.2
+xlrd>=2.0.1
+
+# --- Google Sheets / CSV integration ---
+gspread>=6.1.2
+google-auth>=2.33.0
+requests>=2.31.0
+
+# --- Utilities & Environment ---
+python-dotenv>=1.0.1
+watchdog>=4.0.0
+
+# --- AI & NLP helpers ---
+numpy>=1.26.4
+scikit-learn>=1.5.2
+
+# --- Compatibility & Performance ---
+charset-normalizer>=3.3.2
+idna>=3.7
+urllib3>=2.2.2
