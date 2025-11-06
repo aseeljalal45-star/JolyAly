@@ -1,104 +1,78 @@
 import pandas as pd
 import os
-from difflib import get_close_matches
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 class MiniLegalAI:
-    """
-    🔹 مساعد قانوني ذكي متقدم
-    🔹 يدعم البحث شبه الذكي، اقتراح المواد القانونية، والأمثلة التطبيقية
-    🔹 يعمل مع قاعدة البيانات السابقة (Excel)
-    """
-
-    def __init__(self, workbook_path="AlyWork_Law_Pro_v2025_v24_ColabStreamlitReady.xlsx"):
-        self.workbook_path = workbook_path
-        self.data = self.load_workbook(workbook_path)
-
-    def load_workbook(self, path):
-        """تحميل بيانات Excel كاملة."""
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"الملف غير موجود: {path}")
+    def __init__(self, workbook_path=None):
+        """
+        تهيئة المساعد الذكي وربط قاعدة البيانات القانونية.
+        :param workbook_path: مسار ملف Excel الرئيسي (AlyWork_Law_Pro)
+        """
+        self.workbook_path = workbook_path or "AlyWork_Law_Pro_v2025_v24_ColabStreamlitReady.xlsx"
+        self.db = self.load_database()
+        self.vectorizer = None
+        self.tfidf_matrix = None
+        self.build_tfidf_matrix()
+    
+    def load_database(self):
+        """
+        تحميل قاعدة البيانات من ملف Excel.
+        يتوقع وجود الأعمدة: المادة، القسم، النص، مثال
+        """
+        if not os.path.exists(self.workbook_path):
+            print(f"⚠️ ملف قاعدة البيانات غير موجود: {self.workbook_path}")
+            return pd.DataFrame(columns=['المادة', 'القسم', 'النص', 'مثال'])
         try:
-            xls = pd.ExcelFile(path)
-            if "مواد_القانون" in xls.sheet_names:
-                df = pd.read_excel(xls, sheet_name="مواد_القانون")
-            else:
-                df = pd.read_excel(xls, sheet_name=0)
+            df = pd.read_excel(self.workbook_path, engine='openpyxl')
             df.fillna("", inplace=True)
             return df
         except Exception as e:
-            raise ValueError(f"خطأ أثناء تحميل ملف Excel: {e}")
-
-    def advanced_search(self, query, section=None, max_results=3):
+            print(f"⚠️ خطأ عند تحميل قاعدة البيانات: {e}")
+            return pd.DataFrame(columns=['المادة', 'القسم', 'النص', 'مثال'])
+    
+    def preprocess_text(self, text):
         """
-        البحث الذكي شبه الاصطناعي:
-        🔹 query: نص المستخدم
-        🔹 section: فلترة حسب القسم
-        🔹 max_results: عدد النتائج
+        تنظيف النصوص: حذف علامات الترقيم والأحرف الخاصة
         """
-        if self.data.empty:
-            return "لا توجد بيانات", "", ""
+        text = str(text).strip()
+        text = re.sub(r"[^\w\s]", " ", text)
+        text = re.sub(r"\s+", " ", text)
+        return text
 
-        df = self.data.copy()
-        if section and "القسم" in df.columns:
-            df = df[df["القسم"].str.contains(section, case=False, na=False)]
-
-        # البحث النصي الأساسي
-        mask = df.apply(lambda row: row.astype(str).str.contains(query, case=False, na=False).any(), axis=1)
-        results = df[mask]
-
-        # إذا لم توجد نتائج مباشرة، استخدم التطابق الذكي
-        if results.empty and "نص_القانون" in df.columns:
-            all_texts = df["نص_القانون"].tolist()
-            matches = get_close_matches(query, all_texts, n=max_results, cutoff=0.4)
-            results = df[df["نص_القانون"].isin(matches)]
-
-        if results.empty:
-            return "لا توجد نتائج مطابقة للبحث.", "", ""
-
-        first_result = results.iloc[0]
-        law_text = first_result.get("نص_القانون", "")
-        reference = first_result.get("المادة", "")
-        example = first_result.get("مثال_تطبيقي", "")
-
-        return law_text, reference, example
-
-    def suggest_related_materials(self, query, n=3):
+    def build_tfidf_matrix(self):
         """
-        🔹 اقتراح مواد قانونية مشابهة للموضوع
+        بناء مصفوفة TF-IDF للنصوص في قاعدة البيانات
         """
-        if self.data.empty or "نص_القانون" not in self.data.columns:
-            return []
+        if self.db.empty:
+            return
+        corpus = self.db['النص'].apply(self.preprocess_text).tolist()
+        self.vectorizer = TfidfVectorizer()
+        self.tfidf_matrix = self.vectorizer.fit_transform(corpus)
 
-        all_texts = self.data["نص_القانون"].tolist()
-        matches = get_close_matches(query, all_texts, n=n, cutoff=0.3)
-
-        suggestions = []
-        for match in matches:
-            row = self.data[self.data["نص_القانون"] == match].iloc[0]
-            suggestions.append({
-                "المادة": row.get("المادة", ""),
-                "القسم": row.get("القسم", ""),
-                "نص_القانون": row.get("نص_القانون", ""),
-                "مثال_تطبيقي": row.get("مثال_تطبيقي", "")
-            })
-        return suggestions
-
-    def get_sections(self):
-        """إرجاع جميع الأقسام القانونية المتاحة"""
-        if "القسم" in self.data.columns:
-            return self.data["القسم"].dropna().unique().tolist()
-        return []
-
-    def get_materials_by_section(self, section):
-        """إرجاع جميع المواد داخل قسم محدد"""
-        if "القسم" not in self.data.columns:
-            return pd.DataFrame()
-        return self.data[self.data["القسم"].str.contains(section, case=False, na=False)]
-
-# ========== مثال للاستخدام ==========
-if __name__ == "__main__":
-    ai = MiniLegalAI()
-    query = "إجازة سنوية"
-    print("نتيجة البحث:", ai.advanced_search(query))
-    print("اقتراح مواد ذات صلة:", ai.suggest_related_materials(query))
-    print("الأقسام المتاحة:", ai.get_sections())
+    def advanced_search(self, query, top_n=1):
+        """
+        البحث الذكي في قاعدة البيانات باستخدام TF-IDF وCosine Similarity
+        :param query: الاستعلام النصي
+        :param top_n: عدد النتائج الأعلى تطابقًا
+        :return: (answer, reference, example)
+        """
+        if self.db.empty or self.tfidf_matrix is None:
+            return "⚠️ قاعدة البيانات فارغة.", "", ""
+        
+        query_clean = self.preprocess_text(query)
+        query_vec = self.vectorizer.transform([query_clean])
+        similarities = cosine_similarity(query_vec, self.tfidf_matrix).flatten()
+        
+        top_indices = similarities.argsort()[::-1][:top_n]
+        best_score = similarities[top_indices[0]]
+        
+        if best_score == 0:
+            return "⚠️ لم يتم العثور على تطابق مباشر في قاعدة البيانات.", "", ""
+        
+        row = self.db.iloc[top_indices[0]]
+        answer = row['النص']
+        reference = f"المادة {row['المادة']} - القسم: {row['القسم']}"
+        example = row['مثال'] if 'مثال' in row else "لا يوجد مثال متاح."
+        return answer, reference, example
