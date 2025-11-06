@@ -140,7 +140,7 @@ def workers_section():
         with tab:
             st.markdown(f"🛠️ أداة: {tab.title}")
     show_ai_assistant()
-    smart_recommender("العمال", n=6)  # ✅ عرض البطاقات المتحركة الآن
+    smart_recommender("العمال", n=6)
 
 # ==============================
 # 🏢 أصحاب العمل
@@ -198,3 +198,27 @@ def settings_page():
 # ==============================
 with st.sidebar:
     choice = option_menu(
+        "القائمة الرئيسية",
+        ["🏠 الصفحة الرئيسية", "👷 العمال", "🏢 أصحاب العمل",
+         "🕵️ مفتشو العمل", "📖 الباحثون والمتدربون", "⚙️ الإعدادات"],
+        icons=["house", "person", "building", "shield", "book", "gear"],
+        default_index=0
+    )
+
+pages = {
+    "🏠 الصفحة الرئيسية": show_home,
+    "👷 العمال": workers_section,
+    "🏢 أصحاب العمل": employers_section,
+    "🕵️ مفتشو العمل": inspectors_section,
+    "📖 الباحثون والمتدربون": researchers_section,
+    "⚙️ الإعدادات": settings_page
+}
+pages[choice]()
+
+# ==============================
+# ⏰ Footer
+# ==============================
+st.markdown(
+    f"<hr><center><small>© {datetime.datetime.now().year} AlyWork Law Pro — جميع الحقوق محفوظة.</small></center>",
+    unsafe_allow_html=True
+)
