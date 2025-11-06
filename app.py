@@ -24,8 +24,9 @@ st.set_page_config(
 # ==============================
 def load_css(theme="فاتح"):
     css_file = "assets/styles_light.css" if theme=="فاتح" else "assets/styles_dark.css"
-    with open(css_file, "r", encoding="utf-8") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    if os.path.exists(css_file):
+        with open(css_file, "r", encoding="utf-8") as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # ==============================
 # 📊 تحميل بيانات Google Sheets
@@ -50,6 +51,7 @@ data = load_google_sheets(SHEET_URL)
 workbook_path = os.getenv("WORKBOOK_PATH", "AlyWork_Law_Pro_v2025_v24_ColabStreamlitReady.xlsx")
 ai = MiniLegalAI(workbook_path)
 settings = SettingsManager()
+load_css(settings.get("THEME", "فاتح"))
 
 # ==============================
 # 🧠 المساعد القانوني الذكي
@@ -110,7 +112,6 @@ def show_home():
     st.info("⚠️ المنصة لأغراض التوعية القانونية فقط ولا تُغني عن الاستشارة القانونية.")
     st.markdown("---")
 
-    # Grid Cards للأقسام
     sections = [
         {"title":"👷 العمال","desc":"حقوق وواجبات العامل","icon":"person","func":workers_section},
         {"title":"🏢 أصحاب العمل","desc":"حقوق وواجبات صاحب العمل","icon":"building","func":employers_section},
@@ -186,10 +187,10 @@ def researchers_section():
 # ==============================
 def settings_page():
     section_header("⚙️ الإعدادات", "⚙️")
-    theme = st.radio("اختر النمط:", ["فاتح", "غامق"])
-    lang = st.selectbox("اختر اللغة:", ["العربية", "English"])
-    settings.set("theme", theme)
-    settings.set("language", lang)
+    theme = st.radio("اختر النمط:", ["فاتح", "غامق"], index=0 if settings.get("THEME","فاتح")=="فاتح" else 1)
+    lang = st.selectbox("اختر اللغة:", ["العربية", "English"], index=0 if settings.get("LANG","ar")=="ar" else 1)
+    settings.set("THEME", theme)
+    settings.set("LANG", lang)
     load_css(theme)
     st.success("✅ تم حفظ الإعدادات.")
 
