@@ -2,7 +2,7 @@ import streamlit as st
 from helpers.ui_components import section_header
 
 # ==============================
-# 🎯 بيانات التوصيات الذكية مع صور مصغرة
+# 🎯 بيانات التوصيات الذكية مع صور مصغرة وروابط
 # ==============================
 def get_recommendations_data():
     return {
@@ -41,7 +41,7 @@ def smart_recommender(role_label="العمال", n=6):
 
     section_header("💡 اقتراحات ذكية لك", "💡")
 
-    # إنشاء Grid ديناميكي
+    # إنشاء Grid ديناميكي (3 أعمدة)
     cols = st.columns(3)
     type_styles = {
         "حاسبة": "linear-gradient(135deg, #FFD700, #FFA500)",
@@ -67,12 +67,11 @@ def smart_recommender(role_label="العمال", n=6):
                 box-shadow: 2px 4px 15px rgba(0,0,0,0.2);
                 transition: transform 0.3s, box-shadow 0.3s;
                 text-align:center;
-            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='4px 8px 25px rgba(0,0,0,0.35)';" 
-              onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='2px 4px 15px rgba(0,0,0,0.2)';">
+            ">
                 <img src='{rec['img']}' alt='icon' width='50px' style='margin-bottom:10px;'/>
                 <h4>{rec['icon']} {rec['العنوان']}</h4>
                 <p style='font-size:14px; margin:5px 0;'>{rec['الوصف']}</p>
-                <a href='{rec['link']}' target='_blank' style='color:#fff; text-decoration:underline;' onmouseover="this.style.color='#000';" onmouseout="this.style.color='#fff';">اضغط هنا للتفاصيل</a>
+                <a href='{rec['link']}' target='_blank' style='color:#fff; text-decoration:underline;'>اضغط هنا للتفاصيل</a>
             </div>
             """
             st.markdown(html_card, unsafe_allow_html=True)
