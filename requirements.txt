@@ -1,48 +1,10 @@
-# ==============================
-# Core Framework
-# ==============================
-streamlit==1.37.1
-streamlit-option-menu==0.3.12
-st-aggrid==0.4.11
-plotly==5.18.0
-
-# ==============================
-# Data Handling & Processing
-# ==============================
-pandas==2.2.2
-openpyxl==3.1.2
+streamlit==1.26.0
+streamlit-option-menu==0.5.5
+pandas==2.1.1
+openpyxl==3.1.3
 xlrd==2.0.1
-numpy==1.26.4
-scikit-learn==1.5.2
-
-# ==============================
-# Google Sheets / CSV Integration
-# ==============================
-gspread==6.1.2
-google-auth==2.33.0
+st-aggrid==0.4.14
+plotly==5.16.1
+python-dotenv==1.1.1
+watchdog==3.0.0
 requests==2.31.0
-
-# ==============================
-# AI & NLP Helpers
-# ==============================
-nltk==3.9.1
-tqdm==4.66.1
-
-# ==============================
-# Utilities & Environment
-# ==============================
-python-dotenv==1.0.1
-watchdog==4.0.0
-
-# ==============================
-# Compatibility & Performance
-# ==============================
-charset-normalizer==3.3.2
-idna==3.7
-urllib3==2.2.2
-
-# ==============================
-# Optional / Extras for Extended Functionality
-# ==============================
-pyyaml==6.0
-validators==0.21.0
