@@ -1,25 +1,51 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import os, datetime
+import pandas as pd
 from helpers.mini_ai_smart import MiniLegalAI
 from helpers.settings_manager import SettingsManager
 from helpers.ui_components import message_bubble, section_header, info_card
-from helpers.data_loader import load_data
 from recommender import smart_recommender
 
-# إعداد الصفحة
+# ==============================
+# ⚙️ إعداد الصفحة العامة
+# ==============================
 st.set_page_config(page_title="منصة قانون العمل الأردني الذكية", page_icon="⚖️", layout="wide")
 
-# تحميل ملفات المساعد
+# تحميل ملف التنسيق العام
+with open("assets/styles.css", "r", encoding="utf-8") as css:
+    st.markdown(f"<style>{css.read()}</style>", unsafe_allow_html=True)
+
+# ==============================
+# 📊 ربط قاعدة بيانات Google Sheets
+# ==============================
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1aCnqHzxWh8RlIgCleHByoCPHMzI1i5fCjrpizcTxGVc/export?format=csv"
+
+@st.cache_data(ttl=600)
+def load_google_sheets(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"حدث خطأ أثناء تحميل البيانات من Google Sheets: {e}")
+        return pd.DataFrame()
+
+data = load_google_sheets(SHEET_URL)
+if not data.empty:
+    st.sidebar.success("✅ تم الاتصال بقاعدة بيانات Google Sheets بنجاح")
+else:
+    st.sidebar.warning("⚠️ لم يتم تحميل البيانات، تأكد من صلاحيات الرابط.")
+
+# ==============================
+# 🤖 إعداد المساعد الذكي
+# ==============================
 workbook_path = os.getenv("WORKBOOK_PATH", "AlyWork_Law_Pro_v2025_v24_ColabStreamlitReady.xlsx")
 ai = MiniLegalAI(workbook_path)
 settings = SettingsManager()
 
-# تطبيق التنسيق العام
-with open("assets/styles.css", "r", encoding="utf-8") as css:
-    st.markdown(f"<style>{css.read()}</style>", unsafe_allow_html=True)
-
+# ==============================
 # 🧠 المساعد القانوني
+# ==============================
 def show_ai_assistant():
     section_header("🤖 المساعد القانوني الذكي", "🤖")
     st.markdown("💬 اكتب سؤالك حول قانون العمل الأردني:")
@@ -29,7 +55,9 @@ def show_ai_assistant():
         message_bubble("User", query, is_user=True)
         message_bubble("AI", answer, is_user=False)
 
+# ==============================
 # 🏠 الصفحة الرئيسية
+# ==============================
 def show_home():
     st.title("⚖️ منصة قانون العمل الأردني الذكية")
     st.markdown("""
@@ -40,7 +68,15 @@ def show_home():
     st.info("⚠️ المنصة لأغراض التوعية القانونية فقط ولا تُغني عن الاستشارة القانونية.")
     st.markdown("---")
 
+    if not data.empty:
+        st.subheader("📂 نظرة سريعة على البيانات (من Google Sheets)")
+        st.dataframe(data.head(10))
+    else:
+        st.warning("⚠️ لا توجد بيانات متاحة حاليًا من Google Sheets.")
+
+# ==============================
 # 👷 العمال
+# ==============================
 def workers_section():
     section_header("👷 العمال", "👷")
     info_card("حقوق العامل", "الأجر، الإجازات، مكافأة نهاية الخدمة، بيئة عمل آمنة.")
@@ -49,7 +85,9 @@ def workers_section():
     show_ai_assistant()
     smart_recommender("العمال", n=4)
 
+# ==============================
 # 🏢 أصحاب العمل
+# ==============================
 def employers_section():
     section_header("🏢 أصحاب العمل", "🏢")
     info_card("حقوق صاحب العمل", "إدارة المنشأة ضمن القانون وتنظيم العقود.")
@@ -58,7 +96,9 @@ def employers_section():
     show_ai_assistant()
     smart_recommender("اصحاب العمل", n=4)
 
+# ==============================
 # 🕵️ مفتشو العمل
+# ==============================
 def inspectors_section():
     section_header("🕵️ مفتشو العمل", "🕵️")
     info_card("المهام", "مراقبة تطبيق أحكام القانون وضمان العدالة في بيئة العمل.")
@@ -66,14 +106,18 @@ def inspectors_section():
     show_ai_assistant()
     smart_recommender("مفتشو العمل", n=3)
 
+# ==============================
 # 📖 الباحثون والمتدربون
+# ==============================
 def researchers_section():
     section_header("📖 الباحثون والمتدربون", "📖")
     st.selectbox("اختر نوع التحليل:", ["تحليل التعديلات", "اختبار قانوني", "استعراض السوابق"])
     show_ai_assistant()
     smart_recommender("الباحثون والمتدربون", n=3)
 
+# ==============================
 # ⚙️ الإعدادات
+# ==============================
 def settings_page():
     section_header("⚙️ الإعدادات", "⚙️")
     theme = st.radio("اختر النمط:", ["فاتح", "غامق"])
@@ -82,7 +126,9 @@ def settings_page():
     settings.set("language", lang)
     st.success("✅ تم حفظ الإعدادات.")
 
-# القائمة الجانبية
+# ==============================
+# 🧭 القائمة الجانبية والتنقل
+# ==============================
 with st.sidebar:
     choice = option_menu(
         "القائمة الرئيسية",
@@ -91,7 +137,6 @@ with st.sidebar:
         default_index=0
     )
 
-# التنقل بين الصفحات
 if choice == "🏠 الصفحة الرئيسية":
     show_home()
 elif choice == "👷 العمال":
@@ -105,4 +150,7 @@ elif choice == "📖 الباحثون والمتدربون":
 elif choice == "⚙️ الإعدادات":
     settings_page()
 
+# ==============================
+# ⏰ تذييل الصفحة
+# ==============================
 st.markdown(f"<hr><center><small>© {datetime.datetime.now().year} AlyWork Law Pro — جميع الحقوق محفوظة.</small></center>", unsafe_allow_html=True)
